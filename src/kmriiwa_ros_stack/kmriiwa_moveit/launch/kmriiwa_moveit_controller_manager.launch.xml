@@ -1,0 +1,21 @@
+<launch>
+
+  <!-- loads moveit_controller_manager on the parameter server which is taken as argument 
+    if no argument is passed, moveit_simple_controller_manager will be set -->
+  <arg name="robot_name" default="kmriiwa" />
+  <arg name="load_simulation" default="false"/>
+  <arg name="moveit_controller_manager" default="moveit_simple_controller_manager/MoveItSimpleControllerManager" />
+  <param name="moveit_controller_manager" value="$(arg moveit_controller_manager)"/>
+
+  <!-- loads ros_controllers to the param server -->
+  <!-- <rosparam subst_value="true" file="$(find kmriiwa_moveit)/config/fake_controllers.yaml"subst_value="true">$(arg robot_name)</rosparam> -->
+
+  <group if="$(arg load_simulation)">
+      <rosparam file="$(find kmriiwa_moveit)/config/ros_controllers.yaml" subst_value="true">$(arg robot_name)</rosparam>
+  </group>
+
+    <group unless="$(arg load_simulation)">
+      <rosparam file="$(find kmriiwa_moveit)/config/realRG2FT_kmriiwa_ros_controllers.yaml" subst_value="true">$(arg robot_name)</rosparam>
+  </group>
+
+</launch>

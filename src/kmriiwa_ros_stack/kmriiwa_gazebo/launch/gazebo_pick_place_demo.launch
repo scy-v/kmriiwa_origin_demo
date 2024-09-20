@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="robot_name" default="kmriiwa" />
+  <arg name="load_realsense" default="false"/>
+  <arg name="robot_gripper" default="$(find kmriiwa_description)/urdf/gripper/gripper_rg2.xacro" />
+  <param name="object_description_purple_cylinder" command="$(find xacro)/xacro '$(find kmriiwa_description)/urdf/objects/cylinder.urdf.xacro'"/>
+  <param name="object_description_green_cube" command="$(find xacro)/xacro '$(find kmriiwa_description)/urdf/objects/green_cube.urdf'"/>
+  <!-- <param name="camera_description" command="$(find xacro)/xacro '$(find kmriiwa_description)/urdf/camera/camera.urdf.xacro'"/> -->
+  <arg name="word_name" default="$(find kmriiwa_gazebo)/worlds/experiment_origin.world"/>
+
+   <include file="$(find kmriiwa_gazebo)/launch/kmriiwa_experiment.launch">
+     <arg name="load_realsense" value="$(arg load_realsense)"/>
+     <arg name="robot_gripper" value="$(arg robot_gripper)" />
+     <arg name="word_name" value="$(arg word_name)"/>
+   </include>
+
+  <!-- spawn object -->
+
+  <!-- purple cylinder -->
+   <node name="spawn_gazebo_object_purple_cylinder" pkg="gazebo_ros" type="spawn_model"
+      args="-urdf -param object_description_purple_cylinder -model cylinder -x 1.21802 -y 0  -z 0.9" respawn="false" output="screen" />
+
+  <!-- green_cube -->
+   <!-- <node name="spawn_gazebo_object_green_cube" pkg="gazebo_ros" type="spawn_model"
+      args="-urdf -param object_description_green_cube -model green_cube -x 1.21802 -y -0.2  -z 0.9" respawn="false" output="screen" /> -->
+
+   <!-- camera -->
+<!-- 
+  <node name="spawn_gazebo_camera" pkg="gazebo_ros" type="spawn_model"
+     args="-urdf -param camera_description -model camera_macro -x 1.265302 -y 0.081136 -z 1.823881 -R 3.088740 -P 0.015703 -Y -0.000095" respawn="false" output="screen" /> -->
+
+
+
+
+
+  <!-- bar clamp -->
+ <!-- <param name="object_description" command="$(find xacro)/xacro '$(find deep_grasp_task)/urdf/objects/bar_clamp.urdf.xacro'"/>
+ <node name="spawn_gazebo_object" pkg="gazebo_ros" type="spawn_model"
+    args="-urdf -param object_description -model bar_clamp -x 0.5 -y -0.7 -z 0.03" respawn="false" output="screen" /> -->
+
+  <!-- strawberry -->
+  <!-- <param name="object_description" command="$(find xacro)/xacro '$(find deep_grasp_task)/urdf/objects/strawberry.urdf.xacro'"/>
+  <node name="spawn_gazebo_object" pkg="gazebo_ros" type="spawn_model"
+     args="-urdf -param object_description -model strawberry -x 0.5 -y -0.7 -z 0.0" respawn="false" output="screen" /> -->
+
+
+
+   <!-- <node name="$(anon rviz)" pkg="rviz" type="rviz" respawn="false" args="-d $(find moveit_task_constructor_demo)/config/mtc.rviz"> -->
+    <!-- <rosparam command="load" file="$(find panda_moveit_config)/config/kinematics.yaml"/> -->
+  <!-- </node> -->
+
+</launch>

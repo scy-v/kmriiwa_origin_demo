@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Load panda demo with MTC's execution capability -->
+  <!-- load robotmodel and movegroup -->
+  <arg name="fake_execution" default="false"/>
+  <include file="$(find kmriiwa_moveit)/launch/move_group.launch">
+    <arg name="fake_execution" value="$(arg fake_execution)"/>
+  </include>
+  <!-- <param name="move_group/capabilities" value="move_group/ExecuteTaskSolutionCapability" /> -->
+
+  <!-- Run rviz with prepared config -->
+   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find moveit_task_constructor_demo)/config/deep_grasp.rviz"/>
+</launch>

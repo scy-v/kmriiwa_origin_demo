@@ -1,0 +1,5 @@
+<launch>
+    <group ns="kmriiwa">
+        <node pkg="kmriiwa_simulation_grasp" type="move_base_demo.py" name="move_base_demo" />
+    </group>
+</launch>

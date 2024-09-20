@@ -1,0 +1,216 @@
+<launch>
+  
+  <arg name="use_namespace" default="true" />
+  <arg name="robot_name" default="kmriiwa" />
+  <arg name="no_virtual_joint" default="true"/>
+  <!-- GDB Debug Option -->
+  <arg name="debug" default="false" />
+  <arg unless="$(arg debug)" name="launch_prefix" value="" />
+  <arg     if="$(arg debug)" name="launch_prefix"
+	   value="gdb -x $(find kmriiwa_moveit)/launch/gdb_settings.gdb --ex run --args" />
+  <!-- Verbose Mode Option -->
+  <arg name="info" default="$(arg debug)" />
+  <arg unless="$(arg info)" name="command_args" value="" />
+  <arg     if="$(arg info)" name="command_args" value="--debug" />
+
+  <!-- move_group settings -->
+  <arg name="pipeline" default="ompl" />
+  <arg name="allow_trajectory_execution" default="true"/>
+  <arg name="fake_execution" default="false"/>
+  <arg name="max_safe_path_cost" default="1"/>
+  <arg name="jiggle_fraction" default="0.05" />
+  <arg name="publish_monitored_planning_scene" default="true"/>
+  <arg name="robot_gripper" default="$(find kmriiwa_description)/urdf/gripper/gripper_rg2.xacro" />
+  <arg name="gripper_srdf" default="$(find kmriiwa_moveit)/config/gripper_rg2.srdf.xacro"/>
+  <arg name="capabilities" default="move_group/ExecuteTaskSolutionCapability"/>
+  <arg name="load_realsense_topic" default="false"/>
+  <arg name="merge_real_RG2FT_kmriiwa" default="false"/>
+  <arg name="load_simulation" default="true"/>
+  <arg name="load_real_RG2FT" default="false"/>
+  <arg name="load_real_kmriiwa" default="false"/>
+  <arg name="load_realsense" default="false"/>
+  <arg name="publish_frequency" default="30"/>
+  <arg name="ip" default="172.31.1.87" />
+  <arg name="port" default="502" />
+  <arg name="gripper_name" default="onrobot_rg2ft" />
+  <arg name="disable_capabilities" default=""/>
+  <arg name="load_robot_description" default="true" />
+  <arg name="load_move_group_rviz" default="true"/>
+  <arg name="load_real_move_base" default="false"/>
+
+  <!-- load these non-default MoveGroup capabilities (space seperated) -->
+<!--   
+  <arg name="capabilities" value="
+                a_package/AwsomeMotionPlanningCapability
+                another_package/GraspPlanningPipeline
+                " />
+  -->
+  <!-- inhibit these default MoveGroup capabilities (space seperated) -->
+  <!--
+  <arg name="disable_capabilities" value="
+                move_group/MoveGroupKinematicsService
+                move_group/ClearOctomapService
+                " />
+  -->
+  
+    <!-- merge joint_states -->
+  <group if="$(arg merge_real_RG2FT_kmriiwa)">
+    <node pkg="kmriiwa_moveit" type="merge_joint_states.py" name="merge_joint_states"/>
+  </group>
+  
+  <group ns="$(eval robot_name if use_namespace == 1 else '/')">
+    <!-- fake controller -->
+    <group if="$(arg fake_execution)">
+      <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+        <rosparam param="source_list">[move_group/fake_controller_joint_states]</rosparam> 
+        <remap from="joint_states" to="/$(arg robot_name)/fake/joint_states"/>
+      </node>
+
+      <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" >
+        <param name="publish_frequency" value="10"/>
+        <remap from="joint_states" to="/$(arg robot_name)/fake/joint_states"/>
+      </node>
+    </group> 
+
+    <!-- realsense -->
+    <group if="$(arg load_realsense_topic)">
+      <include file="$(find kmriiwa_moveit)/launch/realsense.launch"/>
+    </group>
+
+    <!-- RG2FT -->
+    <group if="$(eval load_real_RG2FT or merge_real_RG2FT_kmriiwa)">
+      <include file="$(find onrobot_rg2ft_action_server)/launch/onrobot_rg2ft_moveit.launch">
+        <arg name="ip" value="$(arg ip)" />
+        <arg name="port" value="$(arg port)" />
+        <arg name="gripper_name" value="$(arg gripper_name)" />
+      </include>
+    </group>
+
+    <!-- load URDF, SRDF and joint_limits configuration -->
+    <include file="$(find kmriiwa_moveit)/launch/planning_context.launch">
+      <arg name="load_robot_description" value="$(arg load_robot_description)" />
+      <arg name="gripper_srdf" value="$(arg gripper_srdf)"/>
+      <arg name="robot_gripper" value="$(arg robot_gripper)"/>
+      <arg name="robot_name" value="$(arg robot_name)"/>
+      <arg name="load_simulation" value="$(arg load_simulation)"/>
+      <arg name="load_realsense" value="$(arg load_realsense)"/>
+      <arg name="no_virtual_joint" value="$(arg no_virtual_joint)"/>
+    </include>
+
+    <!-- Planning Functionality -->
+    <include ns="move_group" file="$(find kmriiwa_moveit)/launch/planning_pipeline.launch.xml">
+      <arg name="pipeline" value="$(arg pipeline)" />
+      <arg name="robot_name" value="$(arg robot_name)" />
+    </include>
+
+    <!-- Trajectory Execution Functionality -->
+    <include ns="move_group" file="$(find kmriiwa_moveit)/launch/trajectory_execution.launch.xml" if="$(arg allow_trajectory_execution)">
+      <arg name="robot_name" value="$(arg robot_name)" />
+      <arg name="moveit_manage_controllers" value="true" />
+      <arg name="load_simulation" value="$(arg load_simulation)"/>
+      <arg name="moveit_controller_manager" value="kmriiwa" unless="$(arg fake_execution)"/>
+      <arg name="moveit_controller_manager" value="fake" if="$(arg fake_execution)"/>
+    </include>
+
+    <!-- Sensors Functionality -->
+    <include ns="move_group" file="$(find kmriiwa_moveit)/launch/sensor_manager.launch.xml" if="$(arg allow_trajectory_execution)">
+      <arg name="moveit_sensor_manager" value="kmriiwa" />
+    </include>
+ 
+    <!-- Start the actual move_group node/action server -->
+    <group if="$(arg merge_real_RG2FT_kmriiwa)">
+      <node name="move_group" launch-prefix="$(arg launch_prefix)" pkg="moveit_ros_move_group" type="move_group" respawn="false" output="screen" args="joint_states:=/$(arg robot_name)/merge/joint_states $(arg command_args)">
+        <!-- Set the display variable, in case OpenGL code is used internally -->
+        <env name="DISPLAY" value="$(optenv DISPLAY :0)" />
+
+        <param name="allow_trajectory_execution" value="$(arg allow_trajectory_execution)"/>
+        <param name="max_safe_path_cost" value="$(arg max_safe_path_cost)"/>
+        <param name="jiggle_fraction" value="$(arg jiggle_fraction)" />
+        <param name="capabilities" value="$(arg capabilities)"/>
+        <param name="disable_capabilities" value="$(arg disable_capabilities)"/>
+
+
+        <!-- Publish the planning scene of the physical robot so that rviz plugin can know actual robot -->
+        <param name="planning_scene_monitor/publish_planning_scene" value="$(arg publish_monitored_planning_scene)" />
+        <param name="planning_scene_monitor/publish_geometry_updates" value="$(arg publish_monitored_planning_scene)" />
+        <param name="planning_scene_monitor/publish_state_updates" value="$(arg publish_monitored_planning_scene)" />
+        <param name="planning_scene_monitor/publish_transforms_updates" value="$(arg publish_monitored_planning_scene)" />
+      </node>
+    </group>
+
+    <group unless="$(arg merge_real_RG2FT_kmriiwa)">
+      <group if="$(arg load_real_RG2FT)">
+        <node name="move_group" launch-prefix="$(arg launch_prefix)" pkg="moveit_ros_move_group" type="move_group" respawn="false" output="screen" args="joint_states:=/joint_states $(arg command_args)">
+          <!-- Set the display variable, in case OpenGL code is used internally -->
+          <env name="DISPLAY" value="$(optenv DISPLAY :0)" />
+
+          <param name="allow_trajectory_execution" value="$(arg allow_trajectory_execution)"/>
+          <param name="max_safe_path_cost" value="$(arg max_safe_path_cost)"/>
+          <param name="jiggle_fraction" value="$(arg jiggle_fraction)" />
+          <param name="capabilities" value="$(arg capabilities)"/>
+          <param name="disable_capabilities" value="$(arg disable_capabilities)"/>
+
+
+          <!-- Publish the planning scene of the physical robot so that rviz plugin can know actual robot -->
+          <param name="planning_scene_monitor/publish_planning_scene" value="$(arg publish_monitored_planning_scene)" />
+          <param name="planning_scene_monitor/publish_geometry_updates" value="$(arg publish_monitored_planning_scene)" />
+          <param name="planning_scene_monitor/publish_state_updates" value="$(arg publish_monitored_planning_scene)" />
+          <param name="planning_scene_monitor/publish_transforms_updates" value="$(arg publish_monitored_planning_scene)" />
+        </node>
+      </group>
+
+      <group if="$(eval load_real_kmriiwa or load_simulation)">
+        <node name="move_group" launch-prefix="$(arg launch_prefix)" pkg="moveit_ros_move_group" type="move_group" respawn="false" output="screen" args="joint_states:=/$(arg robot_name)/arm/joint_states $(arg command_args)">
+          <!-- Set the display variable, in case OpenGL code is used internally -->
+          <env name="DISPLAY" value="$(optenv DISPLAY :0)" />
+
+          <param name="allow_trajectory_execution" value="$(arg allow_trajectory_execution)"/>
+          <param name="max_safe_path_cost" value="$(arg max_safe_path_cost)"/>
+          <param name="jiggle_fraction" value="$(arg jiggle_fraction)" />
+          <param name="capabilities" value="$(arg capabilities)"/>
+          <param name="disable_capabilities" value="$(arg disable_capabilities)"/>
+
+
+          <!-- Publish the planning scene of the physical robot so that rviz plugin can know actual robot -->
+          <param name="planning_scene_monitor/publish_planning_scene" value="$(arg publish_monitored_planning_scene)" />
+          <param name="planning_scene_monitor/publish_geometry_updates" value="$(arg publish_monitored_planning_scene)" />
+          <param name="planning_scene_monitor/publish_state_updates" value="$(arg publish_monitored_planning_scene)" />
+          <param name="planning_scene_monitor/publish_transforms_updates" value="$(arg publish_monitored_planning_scene)" />
+        </node>
+      </group>
+    </group>
+
+    <group if="$(arg fake_execution)">
+      <node name="move_group" launch-prefix="$(arg launch_prefix)" pkg="moveit_ros_move_group" type="move_group" respawn="false" output="screen" args="joint_states:=/$(arg robot_name)/fake/joint_states $(arg command_args)">
+        <!-- Set the display variable, in case OpenGL code is used internally -->
+        <env name="DISPLAY" value="$(optenv DISPLAY :0)" />
+
+        <param name="allow_trajectory_execution" value="$(arg allow_trajectory_execution)"/>
+        <param name="max_safe_path_cost" value="$(arg max_safe_path_cost)"/>
+        <param name="jiggle_fraction" value="$(arg jiggle_fraction)" />
+        <param name="capabilities" value="$(arg capabilities)"/>
+        <param name="disable_capabilities" value="$(arg disable_capabilities)"/>
+
+
+        <!-- Publish the planning scene of the physical robot so that rviz plugin can know actual robot -->
+        <param name="planning_scene_monitor/publish_planning_scene" value="$(arg publish_monitored_planning_scene)" />
+        <param name="planning_scene_monitor/publish_geometry_updates" value="$(arg publish_monitored_planning_scene)" />
+        <param name="planning_scene_monitor/publish_state_updates" value="$(arg publish_monitored_planning_scene)" />
+        <param name="planning_scene_monitor/publish_transforms_updates" value="$(arg publish_monitored_planning_scene)" />
+      </node>
+    </group>
+
+    <!-- <group if="$(eval load_realsense_topic or load_real_move_base)"> -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+      <param name="publish_frequency" value="$(arg publish_frequency)"/>
+      <remap from="joint_states" to="/$(arg robot_name)/arm/joint_states"/>
+    </node>
+    <!-- </group> -->
+
+
+  <group if="$(arg load_move_group_rviz)">
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find moveit_task_constructor_demo)/config/deep_grasp.rviz"/>
+  </group>
+
+  </group>
+</launch>

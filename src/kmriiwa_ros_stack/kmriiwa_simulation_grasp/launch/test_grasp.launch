@@ -1,0 +1,32 @@
+<launch>
+
+		<arg name="robot_name" default="kmriiwa"/>
+		<arg name="moveit_manage_controllers" default="true"/>
+
+		<arg if="$(arg moveit_manage_controllers)" name="moveit_controller_manager" value="kmriiwa"/>
+		<arg unless="$(arg moveit_manage_controllers)" name="moveit_controller_manager" value="fake"/>
+
+		<rosparam command="load" file="$(find kmriiwa_simulation_grasp)/config/moveit_cpp.yaml" />
+
+		<include ns="kmriiwa/ompl" file="$(find kmriiwa_moveit)/launch/ompl_planning_pipeline.launch.xml"/>
+
+		<include ns="kmriiwa" file="$(find kmriiwa_moveit)/launch/trajectory_execution.launch.xml">
+			<arg name="moveit_controller_manager" value="$(arg moveit_controller_manager)"/>
+		</include>
+
+		<!-- <include ns="grasp" file="$(find kmriiwa_moveit)/launch/planning_context.launch">
+			<arg name="load_robot_description" value="true"/>
+		</include> -->
+
+		<!-- <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+			<rosparam unless="$(arg moveit_manage_controllers)" param="source_list">["/kmriiwa/fake_controller_joint_states"]</rosparam>
+		</node> -->
+
+		<!-- <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/> -->
+
+		<node name="$(anon rviz)" pkg="rviz" type="rviz" respawn="false" args="-d $(find kmriiwa_simulation_grasp)/rviz/moveit_tutorial.rviz"/>
+
+		<node name="kmriiwa" pkg="kmriiwa_simulation_grasp" type="grasp_test"  output="screen">
+		</node> 
+
+</launch>

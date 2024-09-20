@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<robot name="kmriiwa" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:arg name="robot_name" default="kmriiwa"/>
+
+  <xacro:include filename="$(find robotiq_ft_sensor)/urdf/robotiq_ft300.urdf.xacro" />
+  <xacro:include filename="$(find kmriiwa_description)/urdf/gripper/onrobot_rg2ft.xacro" />
+  
+  <!-- <xacro:robotiq_ft300 prefix="" parent="$(arg robot_name)_link_ee" >
+	  <origin xyz="0 0 0" rpy="0 0 0"/> 
+	</xacro:robotiq_ft300> -->
+
+  <!-- gripper -->
+  <xacro:onrobot_rg2ft
+    prefix=""
+    hw_interface="$(arg transmission_hw_interface)"
+    parent="kmriiwa_link_ee"
+  >
+    <origin xyz="0 0 0" rpy="0 0 ${PI/2}" />
+  </xacro:onrobot_rg2ft>
+</robot>

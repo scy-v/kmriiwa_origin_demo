@@ -1,0 +1,33 @@
+<launch>
+    <arg name="load_realsense" default="false"/>
+    <arg name="load_real_world" default="false"/>
+
+     <group ns="kmriiwa">
+        <node pkg="kmriiwa_simulation_grasp" type="grasp_state_start.py" name="grasp_state">
+            <param name="robot_description" value="kmriiwa/robot_description"/>
+            <param name="load_real_world" value="$(arg load_real_world)"/>
+
+        </node>
+    </group>
+    
+    <group if="$(arg load_realsense)">
+            <include file="$(find find_object_2d)/launch/ros1/realsense_find_object_3d.launch">
+                <arg name="realsense_color_image_raw" default="/kmriiwa/camera/color/image_raw"/>
+                <arg name="realsense_depth_image_raw" default="/kmriiwa/camera/aligned_depth_to_color/image_raw"/>
+                <arg name="realsense_depth_camera_info" default="/kmriiwa/camera/aligned_depth_to_color/camera_info"/>
+            </include>
+            
+            <group if="$(arg load_real_world)">
+                <include file="$(find moveit_calibration_gui)/launch/calibration_sample_13_test.launch"/>
+            </group>
+    </group>
+
+    <group unless="$(arg load_realsense)">
+        <include file="$(find find_object_2d)/launch/ros1/kinect_find_object_3d.launch">
+            <arg name="kinect_color_image_raw" value="/kmriiwa/camera/color/image_raw"/>
+            <arg name="kinect_depth_image_raw" value="/kmriiwa/camera/depth/image_rect_raw"/>
+            <arg name="kinect_depth_camera_info" value="/kmriiwa/camera/depth/camera_info"/>
+        </include>
+    </group>        
+
+</launch>   

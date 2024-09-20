@@ -1,0 +1,106 @@
+# Total planning attempts
+max_solutions: 15
+
+# Planning group and link names
+arm_group_name: "kmriiwa_manipulator"
+eef_name: "gripper"
+hand_group_name: "gripper"
+hand_frame: "kmriiwa_link_ee"
+
+# Poses
+hand_open_pose: "open"
+hand_close_pose: "close_simulation_cylinder"
+hand_close_cube_pose: "close_cube"
+arm_home_pose: "home"
+grasp_state: "grasp_state_sim"
+
+# Scene frames
+world_frame: "kmriiwa_base_link"
+table_reference_frame: "map"
+object_grasp_reference_frame: "kmriiwa_base_link"
+camera_reference_frame: "kmriiwa_base_link"
+object_place_reference_frame: "map"
+move_base_reference_frame: "map"
+surface_link_table: "table"
+surface_link_caffe_table: "caffe_table"
+
+move_base_x: 2
+move_base_y: 1.725
+move_base_yaw: -1.57
+
+# Collision object for picking
+# CYLINDER object specifications
+spawn_cylinder: true
+cylinder_name: "cylinder"
+cylinder_dimensions: [0.25, 0.02] # [height, radius]
+# cylinder_dimensions: [0.01, 0.01] # [height, radius]
+cylinder_pose: [1.21802, -0.088024, 0.716784 , 0, 0, 0]
+# object_pose: [0.5, -0.7, 0.0, 0, 0, 0]
+
+spawn_cube: false
+cube_name: "cube"
+cube_dimensions: [0.06, 0.06, 0.06] 
+cube_pose: [1.20802, -0.350353, 0.717499, 0, 0, 0]
+# # BAR CLAMP
+spawn_mesh: false
+# object_name: "object"
+# object_mesh_file: "package://deep_grasp_task/meshes/objects/bar_clamp.dae"
+# object_dimensions: [0.06, 0.12, 0.04]  # [length, width, height]
+# object_pose: [0.5, -0.7, 0.03, 0, 0, 0]
+
+# STRAWBERRY
+# spawn_mesh: true
+# object_name: "object"
+# object_mesh_file: "package://deep_grasp_task/meshes/objects/strawberry.dae"
+# object_dimensions: [0.02]  # [radius]
+# object_pose: [0.5, -0.7, 0., 0, 0, 0]
+
+# Camera collision object
+spawn_camera: false
+camera_name: "camera"
+camera_mesh_file: "package://deep_grasp_task/meshes/camera/kinect.dae"
+camera_pose: [0.5, 0, 0.7, 0, 0, 0] # side
+# camera_pose: [0.5, 0, 0.7, 0, 1.571, 1.571] # over head
+
+# Table model
+spawn_table: true
+table_name: "table"
+# table_dimensions: [0.4, 0.5, 0.1]  # [length, width, height]
+# table_pose: [0.5, -0.7, 0, 0, 0, 0]
+# table_dimensions: [1.5, 1.15, 0.035]  # [length, width, height]
+table_dimensions: [1.49, 1.11, 0.035]  # [length, width, height]
+table_pose: [1.87562 , -0.009161, 0.716784, 0, 0, 0]
+
+
+spawn_caffe_table: true
+caffe_table_name: "caffe_table"
+# table_dimensions: [0.4, 0.5, 0.1]  # [length, width, height]
+# table_pose: [0.5, -0.7, 0, 0, 0, 0]
+# caffe_table_dimensions: [0.913, 0.913, 0.04]  # [length, width, height]
+caffe_table_dimensions: [0.01, 0.01, 0.01]  # [length, width, height]
+caffe_table_pose: [0.008359, -1.15897, 0.716784, 0, 0, 0]
+
+# Gripper grasp frame transform [x,y,z,r,p,y] Eular angle 
+#The posture of gripper in the last grasp is taken as
+# the reference frame and converted into the posture of the object
+# grasp_frame_transform: [0, 0, 0.15, 1.57, 0 ,0.785]
+grasp_frame_transform: [0, 0, 0.168, 0, -1.57 ,0]
+
+# Place pose [x,y,z,r,p,y]
+# place_pose: [0.5, 0.3, 0, 0, 0, 0]
+# place_pose: [0.6, -0.7, 0, 0, 0, 0]
+# cylinder_pose: [1.21802, -0.088024, 0.716784 , 0, 0, 0]
+cylinder_place_pose: [2, 0.48, 0.92 , 0, 0, 0]
+# cylinder_place_pose: [1.176, 0.1, 0.84 , 0, 0, 0]
+# cylinder_place_pose: [1.2, 0.3, 0.746784 , 0, 0, 0]
+# cylinder_place_pose: [0, 0, 0.746784 , 0, 0, 0]
+cube_place_pose: [0.053694, -0.757210, 0.717499 , 0, 0, 0]
+place_surface_offset: 0.0001 # place offset from table
+
+# Valid distance range when approaching an object for picking
+approach_object_min_dist: 0.15
+approach_object_max_dist: 0.2
+
+# Valid height range when lifting an object after pick
+lift_object_min_dist: 0.01
+lift_object_max_dist: 0.1

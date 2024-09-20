@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find kmriiwa_vis)/rviz/moveit.rviz"/> -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find moveit_task_constructor_demo)/config/mtc.rviz"/>
+</launch>

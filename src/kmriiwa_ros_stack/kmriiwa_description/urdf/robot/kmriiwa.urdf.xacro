@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<robot name="kmriiwa" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Import Rviz colors -->
+  <xacro:include filename="$(find kmriiwa_description)/urdf/iiwa14/materials.xacro" />
+  <!--Import the lbr iiwa macro -->
+  <xacro:include filename="$(find kmriiwa_description)/urdf/iiwa14/iiwa14.xacro"/>
+  <!--Import the kmp200 macro -->
+  <xacro:include filename="$(find kmriiwa_description)/urdf/kmp200/kmp200.xacro"/>
+
+  <xacro:arg name="load_simulation" default="true"/>
+  <xacro:arg name="load_realsense" default="false"/>
+
+  <xacro:if value="$(arg load_realsense)">
+    <xacro:include filename="$(find kmriiwa_description)/urdf/camera/_d435i.urdf.xacro"/>
+  </xacro:if>
+
+  <xacro:unless value="$(arg load_realsense)">
+    <xacro:include filename="$(find kmriiwa_description)/urdf/camera/camera_macro.urdf.xacro"/>
+  </xacro:unless>
+
+  <xacro:property name="arm_base_flange_x_pos" value="0.363" />
+  <xacro:property name="arm_base_flange_y_pos" value="-0.184" />
+  <xacro:property name="arm_base_flange_z_pos" value="-0.01" />
+  <xacro:property name="arm_base_flange_yew" value="-1.5708" />
+  <xacro:property name="riser_flange_height" value="0.26" />
+  <xacro:property name="riser_flange_radius" value="0.121" />
+  <xacro:property name="flange_origin_xyz" value="${arm_base_flange_x_pos} ${arm_base_flange_y_pos} ${arm_base_flange_z_pos+riser_flange_height/2}"/>
+  <xacro:property name="flange_origin_rpy" value="0 0 ${arm_base_flange_yew}"/>
+
+  <xacro:arg name="robot_name" default="kmriiwa"/>
+  <xacro:arg name="hardware_interface" default="PositionJointInterface"/>
+  <xacro:arg name="robot_gripper" default="$(find kmriiwa_description)/urdf/gripper/gripper_rg2.xacro" />
+  <xacro:arg name="load_grasp_fix" default="false"/>
+  <!-- rg2-0.215061 robotiq-0.1872 -->
+  <xacro:arg name="tcp" default="0.215061"/>  
+  <!--kmp200-->
+  <xacro:kmp200 robot_name="$(arg robot_name)"/>
+
+  <xacro:if value="$(arg load_realsense)">
+    <xacro:sensor_d435i parent="$(arg robot_name)_link_ee" name="camera" topics_ns="kmriiwa/camera">
+      <origin xyz="-0.07 0.03 0.14" rpy="0.0 -1.57 0.0"/>
+    </xacro:sensor_d435i>
+  </xacro:if>
+  <xacro:unless value="$(arg load_realsense)">
+    <xacro:kinect_camera parent_link="$(arg robot_name)_link_ee" cam_px="-0.07"  cam_op="-1.57"/>
+  </xacro:unless>
+
+   <!-- riser flange--> 
+  <!-- <joint name="$(arg robot_name)_base_top_riser_flange_joint" type="fixed">
+        <parent link="$(arg robot_name)_base_top_link"/>
+        <child link="$(arg robot_name)_riser_flange_link"/>
+        <origin xyz="${flange_origin_xyz}" rpy="${flange_origin_rpy}"/>
+  </joint>
+
+  <link name="$(arg robot_name)_riser_flange_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <cylinder length="${riser_flange_height}" radius="${riser_flange_radius}" />
+        </geometry>
+        <material name="White"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <cylinder length="${riser_flange_height}" radius="${riser_flange_radius}" />
+        </geometry>
+      </collision>
+  </link> -->
+  
+
+  <!--iiwa-->
+  <!-- <xacro:iiwa14 hardware_interface="$(arg hardware_interface)" robot_name="$(arg robot_name)" parent="$(arg robot_name)_riser_flange_link">
+    <origin xyz="0 0 ${riser_flange_height/2}" rpy="0 0 0" />
+  </xacro:iiwa14> -->
+    <xacro:iiwa14 hardware_interface="$(arg hardware_interface)" robot_name="$(arg robot_name)" parent="$(arg robot_name)_base_top_link" tcp="$(arg tcp)">
+    <origin xyz="${arm_base_flange_x_pos} ${arm_base_flange_y_pos} 0" rpy="${flange_origin_rpy}"/>
+  </xacro:iiwa14>
+
+  <!-- Optional custom includes such as grippers, sensors, etc... -->
+  <xacro:include filename="$(arg robot_gripper)"/>
+
+  <!-- load grasp_fix gazebo plugin -->
+  <xacro:if value="$(arg load_grasp_fix)">
+    <xacro:include filename="$(find kmriiwa_description)/urdf/grasp_plugin/gzplugin_grasp_fix.urdf.xacro"/>
+    <xacro:gzplugin_grasp_fix/>
+  </xacro:if>
+
+</robot>

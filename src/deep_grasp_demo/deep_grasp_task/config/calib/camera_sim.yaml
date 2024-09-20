@@ -1,0 +1,7 @@
+# camera extrinsics
+# transformation from camera link to optical link [x y z qw qx qy qz]
+trans_cam_opt: [0.0, 0.0, 0.0, 0.5, -0.5, 0.5, -0.5]
+
+# transformation from base link to camera link [x y z qw qx qy qz]
+# when camera is to the right of the robot (cylinder)
+trans_base_cam: [0.797, -0.177, 0.799, 0.0, 0.0, 0.0, 0.0]  #kinect

@@ -1,0 +1,8 @@
+global_costmap:
+  global_frame: $(arg robot_name)_odom
+  rolling_window: true
+  static_map: false
+
+  plugins:
+  - {name: obstacles,       type: "costmap_2d::ObstacleLayer"}
+  - {name: inflation_layer, type: "costmap_2d::InflationLayer"}

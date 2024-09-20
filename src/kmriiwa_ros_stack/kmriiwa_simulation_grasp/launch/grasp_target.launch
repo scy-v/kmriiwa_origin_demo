@@ -1,0 +1,8 @@
+<launch>
+     <group ns="kmriiwa">
+        <node pkg="kmriiwa_simulation_grasp" type="grasp_target.py" name="grasp_target" output="screen">
+            <param name="robot_description" value="kmriiwa/robot_description"/>
+            <remap from="joint_states" to="/kmriiwa/arm/joint_states"/>
+        </node>
+    </group>
+</launch>

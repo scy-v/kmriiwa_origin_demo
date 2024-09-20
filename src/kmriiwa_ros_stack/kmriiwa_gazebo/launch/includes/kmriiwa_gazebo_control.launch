@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<launch>
+    
+    <!-- Launches the controllers according to the hardware interface selected -->
+    <arg name="robot_name" default="kmriiwa" />
+    <arg name="controllers" default="joint_state_controller manipulator_controller gripper_controller"/>
+    <arg name="hardware_interface" default="PositionJointInterface"/>
+    <arg name="joint_state_frequency" default="20" />
+    <arg name="load_grasp_fix" default="false"/>
+    <arg name="load_realsense" default="true"/>
+    <arg name="robot_gripper" default="$(find kmriiwa_description)/urdf/gripper/gripper_rg2.xacro" />
+    
+    <!-- Loads joint controller configurations from YAML file to parameter server -->
+    <rosparam file="$(find kmriiwa_gazebo)/config/gazebo_iiwa_control.yaml" command="load" subst_value="true">$(arg robot_name)</rosparam>
+    <param name="/$(arg robot_name)/joint_state_controller/publish_rate" value="$(arg joint_state_frequency)" />
+
+    <!-- Load robot description in the controller namespace -->
+    <include file="$(find kmriiwa_description)/launch/kmriiwa_upload.launch">
+      <arg name="robot_name" value="$(arg robot_name)" />
+      <arg name="hardware_interface" value="$(arg hardware_interface)"/>
+      <arg name="load_realsense" value="$(arg load_realsense)"/>
+      <arg name="robot_gripper" value="$(arg robot_gripper)" />
+      <arg name="load_grasp_fix" value="$(arg load_grasp_fix)"/>
+    </include>
+    
+    <!-- Loads the controllers -->
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+          output="screen" args="$(arg controllers)" >
+          
+    </node>
+    
+</launch>

@@ -1,0 +1,10 @@
+<launch>
+    <arg name="load_real_world" default="false"/>
+
+     <group ns="kmriiwa">
+        <node pkg="kmriiwa_simulation_grasp" type="grasp_state_start.py" name="grasp_state">
+            <param name="robot_description" value="kmriiwa/robot_description"/>
+            <param name="load_real_world" value="$(arg load_real_world)"/>
+        </node>
+    </group>
+</launch>

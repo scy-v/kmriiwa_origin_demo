@@ -1,0 +1,19 @@
+<launch>
+
+    <arg name="load_cloud" default="false" doc="load point cloud from file"/>
+    <arg name="frame_id" default="kmriiwa_base_link" doc="frame of the grasps sent to MTC"/>
+    <arg name="load_realsense" default="false"/>
+    <arg name="load_realsense_topic" default="false"/>
+    <arg name="load_real_world" default="false"/>
+
+    <include file="$(find moveit_task_constructor_gpd)/launch/gpd_demo.launch">
+        <arg name="load_cloud" value="$(arg load_cloud)" />
+        <arg name="frame_id" value="$(arg frame_id)" />
+        <arg name="load_realsense" value="$(arg load_realsense)"/>
+        <arg name="load_real_world" value="$(arg load_real_world)"/>
+        <arg name="load_realsense_topic" value="$(arg load_realsense_topic)"/>
+    </include>
+
+    <!-- <node pkg="deep_grasp_task" type="tf_transform_cylinder.py" name="get_cylinder_position" output="screen"/> -->
+
+</launch>

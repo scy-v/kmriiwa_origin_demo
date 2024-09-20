@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+  
+  <arg name="robot_name" default="kmriiwa" />
+  <arg name="hardware_interface" default="PositionJointInterface" />
+  <arg name="robot_gripper" default="$(find kmriiwa_description)/urdf/gripper/gripper_rg2.xacro"/>
+  <arg name="load_grasp_fix" default="false"/>
+  <arg name="load_realsense" default="true"/>
+
+  <param name="robot_description" command="$(find xacro)/xacro '$(find kmriiwa_description)/urdf/robot/kmriiwa.urdf.xacro' robot_name:='$(arg robot_name)' hardware_interface:='$(arg hardware_interface)' robot_gripper:='$(arg robot_gripper)' load_grasp_fix:='$(arg load_grasp_fix)' load_realsense:='$(arg load_realsense)' "/>
+
+</launch>
